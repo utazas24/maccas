@@ -54,7 +54,8 @@
         .order-image-container {
             position: relative;
             margin: 5px;
-            transition: transform 0.3s ease;
+            width: calc(100% / 4 - 10px); /* Fit up to 4 images per row, with spacing */
+            max-width: 25%;
         }
         .order-image {
             display: block;
@@ -232,7 +233,6 @@
 
             const screenHeight = screen.clientHeight;
             const imageHeight = screenHeight * 0.45;  // Adjust to fit almost half of the screen height
-            const imageWidth = imageHeight * 16 / 9;  // Maintain 16:9 aspect ratio
 
             images.forEach(image => {
                 const { imgContainer } = image;
