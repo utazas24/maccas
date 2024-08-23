@@ -24,19 +24,35 @@
             color: white;
             overflow: hidden;
         }
-        #screen {
-            flex: 1;
+        #container {
             display: flex;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            overflow-y: hidden;
+            flex-direction: row;
+            flex-grow: 1;
             padding: 10px;
-            position: relative;
-            white-space: nowrap; /* Ensures images are in a single line */
+            overflow: hidden;
+        }
+        #screen {
+            flex-grow: 1;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            padding: 10px;
+            max-width: 75%;
+            height: 100%;
+            overflow-y: auto;
+        }
+        #hold-area {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            align-items: flex-end;
+            max-width: 25%;
+            padding: 10px;
+            overflow-x: auto;
+            height: 100%;
         }
         .order-image-container {
             position: relative;
-            display: inline-block;
             margin: 5px;
             border-bottom: 8px solid purple; /* Thick line under images */
             transition: transform 0.3s ease;
@@ -44,7 +60,7 @@
         .order-image {
             display: block;
             max-width: 100%;
-            height: 100vh; /* Adjust to almost full height */
+            height: 100%;
             object-fit: contain;
             cursor: pointer;
         }
@@ -76,22 +92,10 @@
                 background-color: purple;
             }
         }
-        #hold-area {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            max-height: calc(50% - 20px); /* Adjust height based on available space */
-            overflow-y: auto; /* Allow scrolling if too many images */
-            z-index: 10;
-        }
         #more-orders {
             position: absolute;
             bottom: 10px;
-            right: 10px;
+            left: 10px;
             font-size: 18px;
             background-color: #222;
             padding: 5px 10px;
@@ -141,9 +145,11 @@
     </style>
 </head>
 <body>
-    <div id="screen"></div>
+    <div id="container">
+        <div id="screen"></div>
+        <div id="hold-area"></div>
+    </div>
     <div id="more-orders"></div>
-    <div id="hold-area"></div>
     <div id="buttons">
         <button onclick="addImage()">Add</button>
         <button onclick="outImage()">Out</button>
@@ -156,13 +162,13 @@
 
     <script>
         const screen = document.getElementById('screen');
-        const moreOrders = document.getElementById('more-orders');
         const holdArea = document.getElementById('hold-area');
+        const moreOrders = document.getElementById('more-orders');
         let images = [];
         let holdImages = [];
-        let removedImages = []; // Track removed images
-        let timers = new Map(); // Map to store timers for images
-        let isCallbackHidden = false; // Track if callback image is hidden
+        let removedImages = [];
+        let timers = new Map();
+        let isCallbackHidden = false;
 
         function addImage() {
             document.getElementById('image-input').click();
@@ -184,7 +190,6 @@
 
                 imgContainer.appendChild(img);
 
-                // Initialize timer for the new image
                 images.push({ imgContainer, startTime: Date.now() });
                 timers.set(imgContainer, setInterval(() => updateTimer(imgContainer), 1000));
                 renderImages();
@@ -204,16 +209,18 @@
             timerBar.setAttribute('data-time', timeString);
             timerBar.textContent = timeString;
 
-            if (elapsed >= 120) { // 2 minutes threshold
+            if (elapsed >= 120) {
                 imgContainer.classList.add('flashing');
             }
         }
 
         function renderImages() {
             screen.innerHTML = '';
+            holdArea.innerHTML = '';
+
             const screenHeight = screen.clientHeight;
-            const imageHeight = screenHeight - 20;  // Full height minus margins
-            const imageWidth = imageHeight * 9 / 16;  // Maintain 9:16 aspect ratio
+            const imageHeight = screenHeight * 0.45;  // Adjust to fit almost half of the screen height
+            const imageWidth = imageHeight * 16 / 9;  // Maintain 16:9 aspect ratio
 
             images.forEach(image => {
                 const { imgContainer } = image;
@@ -223,7 +230,15 @@
                 screen.appendChild(imgContainer);
             });
 
-            updateMoreOrders(images.length - 4);
+            holdImages.forEach(image => {
+                const { imgContainer } = image;
+                imgContainer.style.height = `${imageHeight}px`;
+                imgContainer.style.width = `${imageWidth}px`;
+                imgContainer.classList.remove('hidden'); // Ensure it's visible
+                holdArea.appendChild(imgContainer);
+            });
+
+            updateMoreOrders(images.length + holdImages.length - 4);
         }
 
         function updateMoreOrders(moreCount) {
@@ -239,7 +254,7 @@
                 const firstImage = images.shift();
                 clearInterval(timers.get(firstImage.imgContainer));
                 timers.delete(firstImage.imgContainer);
-                removedImages.push(firstImage); // Save removed image
+                removedImages.push(firstImage);
                 renderImages();
             }
         }
@@ -260,12 +275,12 @@
                 clearInterval(timers.get(holdImage.imgContainer));
                 timers.delete(holdImage.imgContainer);
                 holdArea.removeChild(holdImage.imgContainer);
+                renderImages();
             }
         }
 
         function callback() {
             if (isCallbackHidden) {
-                // Restore the last hidden callback image
                 const callbackImage = images.find(image => image.imgContainer.classList.contains('hidden'));
                 if (callbackImage) {
                     callbackImage.imgContainer.classList.remove('hidden');
