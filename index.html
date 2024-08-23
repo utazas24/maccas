@@ -54,7 +54,7 @@
         .order-image-container {
             position: relative;
             margin: 5px;
-            border-bottom: 8px solid purple; /* Thick line under images */
+            border-bottom: 8px solid yellow; /* Yellow for current orders */
             transition: transform 0.3s ease;
         }
         .order-image {
@@ -70,18 +70,19 @@
             left: 0;
             width: 100%;
             height: 30px; /* Increased height for better visibility */
-            background: purple;
             color: white;
             font-size: 16px;
             text-align: center;
             line-height: 30px;
             transition: background 0.5s ease;
         }
-        .order-image-container.hold-image .timer-bar {
-            background: red;
+        .hold-image .timer-bar {
+            background-color: red; /* Red for held orders */
         }
-        .order-image-container.flashing .timer-bar {
-            background: red;
+        .callback-image .timer-bar {
+            background-color: purple; /* Purple for callback orders */
+        }
+        .flashing .timer-bar {
             animation: flash 1s step-end infinite;
         }
         @keyframes flash {
@@ -89,7 +90,7 @@
                 background-color: red;
             }
             100% {
-                background-color: purple;
+                background-color: black;
             }
         }
         #more-orders {
@@ -105,7 +106,7 @@
             display: flex;
             justify-content: center;
             padding: 10px;
-            background-color: purple;
+            background-color: #222;
             border-top: 2px solid #444;
         }
         button {
@@ -168,7 +169,6 @@
         let holdImages = [];
         let removedImages = [];
         let timers = new Map();
-        let isCallbackHidden = false;
 
         function addImage() {
             document.getElementById('image-input').click();
@@ -227,6 +227,7 @@
                 imgContainer.style.height = `${imageHeight}px`;
                 imgContainer.style.width = `${imageWidth}px`;
                 imgContainer.classList.remove('hidden'); // Ensure it's visible
+                imgContainer.querySelector('.timer-bar').style.backgroundColor = 'yellow'; // Yellow for active orders
                 screen.appendChild(imgContainer);
             });
 
@@ -235,6 +236,7 @@
                 imgContainer.style.height = `${imageHeight}px`;
                 imgContainer.style.width = `${imageWidth}px`;
                 imgContainer.classList.remove('hidden'); // Ensure it's visible
+                imgContainer.querySelector('.timer-bar').style.backgroundColor = 'red'; // Red for held orders
                 holdArea.appendChild(imgContainer);
             });
 
@@ -280,32 +282,19 @@
         }
 
         function callback() {
-            if (isCallbackHidden) {
-                const callbackImage = images.find(image => image.imgContainer.classList.contains('hidden'));
-                if (callbackImage) {
-                    callbackImage.imgContainer.classList.remove('hidden');
-                    callbackImage.imgContainer.classList.remove('hold-image');
-                    images.unshift(callbackImage);
-                    screen.insertBefore(callbackImage.imgContainer, screen.firstChild);
-                    renderImages();
-                    document.querySelector('#buttons').style.backgroundColor = 'purple'; // Set banner color to purple
-                    setTimeout(() => {
-                        document.querySelector('#buttons').style.backgroundColor = '#222'; // Revert color after 1 second
-                    }, 1000);
-                    isCallbackHidden = false; // Mark as hidden
-                }
+            if (removedImages.length > 0) {
+                const lastRemovedImage = removedImages.pop();
+                lastRemovedImage.imgContainer.classList.add('callback-image');
+                images.unshift(lastRemovedImage);
+                timers.set(lastRemovedImage.imgContainer, setInterval(() => updateTimer(lastRemovedImage.imgContainer), 1000));
+                renderImages();
             } else {
-                if (removedImages.length > 0) {
-                    const lastRemovedImage = removedImages.pop();
-                    lastRemovedImage.imgContainer.classList.add('hidden');
-                    images.unshift(lastRemovedImage);
-                    screen.insertBefore(lastRemovedImage.imgContainer, screen.firstChild);
+                if (images.length > 0) {
+                    const firstImage = images.shift();
+                    clearInterval(timers.get(firstImage.imgContainer));
+                    timers.delete(firstImage.imgContainer);
+                    removedImages.push(firstImage);
                     renderImages();
-                    document.querySelector('#buttons').style.backgroundColor = 'purple'; // Set banner color to purple
-                    setTimeout(() => {
-                        document.querySelector('#buttons').style.backgroundColor = '#222'; // Revert color after 1 second
-                    }, 1000);
-                    isCallbackHidden = true; // Mark as hidden
                 }
             }
         }
