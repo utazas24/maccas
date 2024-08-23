@@ -57,8 +57,8 @@
             left: 0;
             width: 100%;
             height: 16px;
-            background: yellow;
-            color: black;
+            background: purple; /* Changed background color */
+            color: white;
             font-size: 14px;
             text-align: center;
             line-height: 16px;
@@ -76,7 +76,7 @@
                 background-color: red;
             }
             100% {
-                background-color: yellow;
+                background-color: purple;
             }
         }
         #hold-area {
@@ -137,6 +137,9 @@
             max-width: 100%;
             max-height: 100%;
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -148,7 +151,7 @@
         <button onclick="outImage()">Out</button>
         <button onclick="holdImage()">Hold</button>
         <button onclick="holdOutImage()">Hold Out</button>
-        <button onclick="callback()">Callback</button> <!-- Changed button name -->
+        <button onclick="callback()">Callback</button>
     </div>
 
     <input type="file" id="image-input" accept="image/*" style="display: none;" onchange="previewImage(event)">
@@ -161,6 +164,7 @@
         let holdImages = [];
         let removedImages = []; // Track removed images
         let timers = new Map(); // Map to store timers for images
+        let isCallbackHidden = false; // Track if callback image is hidden
 
         function addImage() {
             document.getElementById('image-input').click();
@@ -277,16 +281,30 @@
         }
 
         function callback() {
-            if (removedImages.length > 0) {
-                const lastRemovedImage = removedImages.pop();
-                lastRemovedImage.imgContainer.classList.remove('hold-image');
-                images.unshift(lastRemovedImage);
-                screen.insertBefore(lastRemovedImage.imgContainer, screen.firstChild);
-                renderImages();
-                document.querySelector('#buttons').style.backgroundColor = 'purple'; // Set banner color to purple
-                setTimeout(() => {
-                    document.querySelector('#buttons').style.backgroundColor = '#222'; // Revert color after 1 second
-                }, 1000);
+            if (isCallbackHidden) {
+                // Restore the last hidden callback image
+                const callbackImage = images.find(image => image.imgContainer.classList.contains('hidden'));
+                if (callbackImage) {
+                    callbackImage.imgContainer.classList.remove('hidden');
+                    callbackImage.imgContainer.classList.remove('hold-image');
+                    images.unshift(callbackImage);
+                    screen.insertBefore(callbackImage.imgContainer, screen.firstChild);
+                    renderImages();
+                    isCallbackHidden = false;
+                }
+            } else {
+                if (removedImages.length > 0) {
+                    const lastRemovedImage = removedImages.pop();
+                    lastRemovedImage.imgContainer.classList.add('hidden');
+                    images.unshift(lastRemovedImage);
+                    screen.insertBefore(lastRemovedImage.imgContainer, screen.firstChild);
+                    renderImages();
+                    document.querySelector('#buttons').style.backgroundColor = 'purple'; // Set banner color to purple
+                    setTimeout(() => {
+                        document.querySelector('#buttons').style.backgroundColor = '#222'; // Revert color after 1 second
+                    }, 1000);
+                    isCallbackHidden = true; // Mark as hidden
+                }
             }
         }
 
