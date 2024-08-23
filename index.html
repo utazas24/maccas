@@ -9,7 +9,6 @@
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="manifest" href="manifest.json">
     <style>
-        /* Same CSS as before */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -55,13 +54,12 @@
         .order-image-container {
             position: relative;
             margin: 5px;
-            border-bottom: 8px solid yellow; /* Yellow for current orders */
             transition: transform 0.3s ease;
         }
         .order-image {
             display: block;
-            max-width: 100%;
-            height: 100%;
+            width: 100%; /* Ensure image is as wide as its container */
+            height: auto; /* Maintain aspect ratio */
             object-fit: contain;
             cursor: pointer;
         }
@@ -70,7 +68,7 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 30px; /* Increased height for better visibility */
+            height: 30px; /* Height of the banner */
             color: white;
             font-size: 16px;
             text-align: center;
@@ -239,7 +237,7 @@
             images.forEach(image => {
                 const { imgContainer } = image;
                 imgContainer.style.height = `${imageHeight}px`;
-                imgContainer.style.width = `${imageWidth}px`;
+                imgContainer.style.width = '100%'; // Ensure the image and banner width are the same
                 imgContainer.classList.remove('hidden'); // Ensure it's visible
                 imgContainer.querySelector('.timer-bar').style.backgroundColor = 'yellow'; // Yellow for active orders
                 screen.appendChild(imgContainer);
@@ -248,7 +246,7 @@
             holdImages.forEach(image => {
                 const { imgContainer } = image;
                 imgContainer.style.height = `${imageHeight}px`;
-                imgContainer.style.width = `${imageWidth}px`;
+                imgContainer.style.width = '100%'; // Ensure the image and banner width are the same
                 imgContainer.classList.remove('hidden'); // Ensure it's visible
                 imgContainer.querySelector('.timer-bar').style.backgroundColor = 'red'; // Red for held orders
                 holdArea.appendChild(imgContainer);
@@ -279,7 +277,6 @@
             if (images.length > 0) {
                 const firstImage = images.shift();
                 firstImage.imgContainer.classList.add('hold-image');
-                holdArea.appendChild(firstImage.imgContainer);
                 holdImages.push(firstImage);
                 renderImages();
             }
@@ -302,14 +299,6 @@
                 images.unshift(lastRemovedImage);
                 timers.set(lastRemovedImage.imgContainer, setInterval(() => updateTimer(lastRemovedImage.imgContainer), 1000));
                 renderImages();
-            } else {
-                if (images.length > 0) {
-                    const firstImage = images.shift();
-                    clearInterval(timers.get(firstImage.imgContainer));
-                    timers.delete(firstImage.imgContainer);
-                    removedImages.push(firstImage);
-                    renderImages();
-                }
             }
         }
 
