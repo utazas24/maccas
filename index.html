@@ -22,7 +22,7 @@
             margin: 0;
             background-color: black;
             color: white;
-            overflow: hidden; /* Prevent scrolling */
+            overflow: hidden;
         }
         #screen {
             flex: 1;
@@ -35,8 +35,8 @@
         .order-image-container {
             position: relative;
             margin: 5px;
-            flex: 1 1 calc(50% - 10px); /* Ensures 2 images per row */
-            max-width: calc(50% - 10px); /* Ensures 2 images per row */
+            flex: 1 1 calc(50% - 10px);
+            max-width: calc(50% - 10px);
             height: auto;
             display: flex;
             align-items: center;
@@ -46,26 +46,25 @@
         }
         .order-image {
             width: 100%;
-            object-fit: contain; /* Ensure the image scales without cropping */
+            object-fit: contain;
             aspect-ratio: 9 / 16;
             cursor: pointer;
         }
         .timer-bar {
-            content: attr(data-time);
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 16px; /* Increased thickness of the line */
-            background: yellow; /* Initial color of the line */
+            height: 16px;
+            background: yellow;
             color: black;
             font-size: 14px;
             text-align: center;
-            line-height: 16px; /* Align the text in the middle of the line */
+            line-height: 16px;
             transition: background 0.5s ease;
         }
         .order-image-container.hold-image .timer-bar {
-            background: red; /* Color of the line when on hold */
+            background: red;
         }
         .order-image-container.flashing .timer-bar {
             background: red;
@@ -113,8 +112,8 @@
             background-color: #444;
             border: 1px solid #555;
             border-radius: 5px;
-            flex-grow: 1; /* Make buttons take equal space */
-            max-width: 150px; /* Control the maximum width of buttons */
+            flex-grow: 1;
+            max-width: 150px;
         }
         button:hover {
             background-color: #555;
@@ -231,14 +230,6 @@
                 }
             }
 
-            // Manage hold overlapping the last visible image
-            if (visibleImages.length > 0 && holdImages.length > 0) {
-                const lastVisible = visibleImages.pop();
-                screen.removeChild(lastVisible); // Remove it from screen
-                holdArea.appendChild(lastVisible); // Move to hold area
-                holdImages.push({ imgContainer: lastVisible });
-            }
-
             screen.innerHTML = '';  // Clear screen
             visibleImages.forEach(imgContainer => screen.appendChild(imgContainer));  // Append only visible images
             updateMoreOrders(images.length - visibleImages.length);
@@ -250,13 +241,6 @@
             } else {
                 moreOrders.innerText = '';
             }
-        }
-
-        function cropImage(img) {
-            // Placeholder for cropping functionality
-            alert('Cropping functionality would go here.');
-            // For now, we will just add the image as is
-            addImage(img.src);
         }
 
         function outImage() {
@@ -271,8 +255,8 @@
         function holdImage() {
             if (images.length > 0) {
                 const firstImage = images.shift();
-                holdArea.appendChild(firstImage.imgContainer);
                 firstImage.imgContainer.classList.add('hold-image');
+                holdArea.appendChild(firstImage.imgContainer);
                 holdImages.push(firstImage);
                 renderImages();
             }
