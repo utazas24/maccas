@@ -123,6 +123,7 @@
         <button onclick="outImage()">Out</button>
         <button onclick="holdImage()">Hold</button>
         <button onclick="holdOutImage()">Hold Out</button>
+        <button onclick="toggleFullScreen()">Full Screen</button> <!-- Full Screen Button -->
     </div>
 
     <input type="file" id="image-input" accept="image/*" style="display: none;" onchange="previewImage(event)">
@@ -265,6 +266,16 @@
                 clearInterval(timers.get(imgContainer)); // Stop the timer
                 timers.delete(imgContainer); // Remove timer from the map
                 holdArea.removeChild(imgContainer);
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
             }
         }
     </script>
