@@ -43,6 +43,7 @@
             justify-content: center;
             overflow: hidden;
             transition: transform 0.3s ease;
+            border-bottom: 4px solid yellow; /* Border color for images */
         }
         .order-image {
             width: 100%;
@@ -102,7 +103,7 @@
             display: flex;
             justify-content: center;
             padding: 10px;
-            background-color: #222;
+            background-color: purple; /* Changed background color */
             border-top: 2px solid #444;
         }
         button {
@@ -147,7 +148,7 @@
         <button onclick="outImage()">Out</button>
         <button onclick="holdImage()">Hold</button>
         <button onclick="holdOutImage()">Hold Out</button>
-        <button onclick="toggleFullScreen()">Full Screen</button>
+        <button onclick="callback()">Callback</button> <!-- Changed button name -->
     </div>
 
     <input type="file" id="image-input" accept="image/*" style="display: none;" onchange="previewImage(event)">
@@ -158,6 +159,7 @@
         const holdArea = document.getElementById('hold-area');
         let images = [];
         let holdImages = [];
+        let removedImages = []; // Track removed images
         let timers = new Map(); // Map to store timers for images
 
         function addImage() {
@@ -250,6 +252,7 @@
                 const firstImage = images.shift();
                 clearInterval(timers.get(firstImage.imgContainer));
                 timers.delete(firstImage.imgContainer);
+                removedImages.push(firstImage); // Save removed image
                 renderImages();
             }
         }
@@ -273,13 +276,17 @@
             }
         }
 
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+        function callback() {
+            if (removedImages.length > 0) {
+                const lastRemovedImage = removedImages.pop();
+                lastRemovedImage.imgContainer.classList.remove('hold-image');
+                images.unshift(lastRemovedImage);
+                screen.insertBefore(lastRemovedImage.imgContainer, screen.firstChild);
+                renderImages();
+                document.querySelector('#buttons').style.backgroundColor = 'purple'; // Set banner color to purple
+                setTimeout(() => {
+                    document.querySelector('#buttons').style.backgroundColor = '#222'; // Revert color after 1 second
+                }, 1000);
             }
         }
 
