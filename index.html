@@ -9,6 +9,7 @@
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="manifest" href="manifest.json">
     <style>
+        /* Same CSS as before */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -137,8 +138,21 @@
             z-index: 1000;
         }
         .fullscreen-image img {
-            max-width: 100%;
-            max-height: 100%;
+            max-width: 80%; /* Leave space for the button */
+            max-height: 80%;
+        }
+        .fullscreen-image .move-to-front-btn {
+            position: absolute;
+            right: 10%;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px 20px;
+            background-color: #444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1001;
         }
         .hidden {
             display: none;
@@ -186,7 +200,7 @@
                 const img = document.createElement('img');
                 img.src = reader.result;
                 img.className = 'order-image';
-                img.onclick = () => enlargeImage(img);
+                img.onclick = () => enlargeImage(img, imgContainer);
 
                 imgContainer.appendChild(img);
 
@@ -273,10 +287,9 @@
 
         function holdOutImage() {
             if (holdImages.length > 0) {
-                const holdImage = holdImages.shift();
-                clearInterval(timers.get(holdImage.imgContainer));
-                timers.delete(holdImage.imgContainer);
-                holdArea.removeChild(holdImage.imgContainer);
+                const firstHoldImage = holdImages.shift();
+                clearInterval(timers.get(firstHoldImage.imgContainer));
+                timers.delete(firstHoldImage.imgContainer);
                 renderImages();
             }
         }
@@ -284,6 +297,7 @@
         function callback() {
             if (removedImages.length > 0) {
                 const lastRemovedImage = removedImages.pop();
+                lastRemovedImage.imgContainer.classList.remove('hold-image');
                 lastRemovedImage.imgContainer.classList.add('callback-image');
                 images.unshift(lastRemovedImage);
                 timers.set(lastRemovedImage.imgContainer, setInterval(() => updateTimer(lastRemovedImage.imgContainer), 1000));
@@ -299,15 +313,34 @@
             }
         }
 
-        function enlargeImage(img) {
+        function enlargeImage(img, imgContainer) {
             const fullscreenDiv = document.createElement('div');
             fullscreenDiv.className = 'fullscreen-image';
-            fullscreenDiv.onclick = () => document.body.removeChild(fullscreenDiv);
 
             const imgClone = img.cloneNode();
             fullscreenDiv.appendChild(imgClone);
 
+            const moveToFrontBtn = document.createElement('button');
+            moveToFrontBtn.className = 'move-to-front-btn';
+            moveToFrontBtn.textContent = 'Move to Front';
+            moveToFrontBtn.onclick = () => {
+                moveToFront(imgContainer);
+                document.body.removeChild(fullscreenDiv);
+            };
+
+            fullscreenDiv.appendChild(moveToFrontBtn);
+
+            fullscreenDiv.onclick = () => document.body.removeChild(fullscreenDiv);
             document.body.appendChild(fullscreenDiv);
+        }
+
+        function moveToFront(imgContainer) {
+            const imageIndex = images.findIndex(image => image.imgContainer === imgContainer);
+            if (imageIndex !== -1) {
+                const [imageToMove] = images.splice(imageIndex, 1);
+                images.unshift(imageToMove);
+                renderImages();
+            }
         }
     </script>
 </body>
