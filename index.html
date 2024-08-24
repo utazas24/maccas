@@ -19,34 +19,30 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
-            margin: 0;
             background-color: black;
             color: white;
             overflow: hidden;
         }
         #container {
             display: flex;
-            flex-direction: row;
-            flex-grow: 1;
-            padding: 10px;
-            overflow: hidden;
+            flex-direction: column;
+            height: 100%;
             width: 100%;
         }
         #screen {
             display: flex;
             flex-wrap: wrap;
-            align-content: flex-start;
             padding: 10px;
             width: 100%;
-            height: 100%;
-            position: relative; /* Allows held images to overlay */
-            overflow-y: auto;
+            flex-grow: 1;
+            overflow: hidden;
         }
         .order-image-container {
             position: relative;
             margin: 5px;
-            flex-basis: calc(25% - 10px); /* Fit up to 4 images per row, accounting for margins */
-            max-width: 25%;
+            flex-basis: calc(25% - 10px); /* Fit 4 images per row, accounting for margins */
+            max-width: calc(25% - 10px);
+            height: 45%; /* Fit 2 rows, adjust for the header */
         }
         .order-image {
             display: block;
@@ -65,14 +61,21 @@
             font-size: 16px;
             text-align: center;
             line-height: 30px;
+            background-color: yellow; /* Default background color */
             transition: background 0.5s ease;
         }
-        .hold-image {
+        .hold-images-container {
             position: absolute;
             bottom: 10px;
             right: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .hold-image {
             width: 100px; /* Smaller size for the floating hold image */
+            height: auto;
             z-index: 100;
+            cursor: pointer;
         }
         .hold-image .timer-bar {
             background-color: red; /* Red for held orders */
@@ -90,15 +93,6 @@
             100% {
                 background-color: black;
             }
-        }
-        #more-orders {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            font-size: 18px;
-            background-color: #222;
-            padding: 5px 10px;
-            border-radius: 5px;
         }
         #buttons {
             display: flex;
@@ -159,8 +153,8 @@
 <body>
     <div id="container">
         <div id="screen"></div>
+        <div class="hold-images-container"></div>
     </div>
-    <div id="more-orders"></div>
     <div id="buttons">
         <button onclick="addImage()">Add</button>
         <button onclick="outImage()">Out</button>
@@ -173,7 +167,7 @@
 
     <script>
         const screen = document.getElementById('screen');
-        const moreOrders = document.getElementById('more-orders');
+        const holdContainer = document.querySelector('.hold-images-container');
         let images = [];
         let holdImages = [];
         let removedImages = [];
@@ -225,36 +219,38 @@
 
         function renderImages() {
             screen.innerHTML = '';
+            holdContainer.innerHTML = '';
 
-            const screenHeight = screen.clientHeight;
-            const imageHeight = screenHeight * 0.45;  // Adjust to fit almost half of the screen height
+            const screenImages = images.slice(0, 8); // Display only 8 images (2 rows of 4)
+            const hiddenImages = images.slice(8); // Hide the rest
 
-            images.forEach(image => {
+            screenImages.forEach(image => {
                 const { imgContainer } = image;
-                imgContainer.style.height = `${imageHeight}px`;
-                imgContainer.style.width = '100%'; // Ensure the image and banner width are the same
-                imgContainer.classList.remove('hidden'); // Ensure it's visible
+                imgContainer.classList.remove('hidden');
                 imgContainer.querySelector('.timer-bar').style.backgroundColor = 'yellow'; // Yellow for active orders
                 screen.appendChild(imgContainer);
             });
 
-            holdImages.forEach(image => {
+            hiddenImages.forEach(image => {
                 const { imgContainer } = image;
-                imgContainer.style.height = `100px`; /* Smaller size for floating sticker */
-                imgContainer.style.width = '100px';
-                imgContainer.classList.add('hold-image');
-                imgContainer.querySelector('.timer-bar').style.backgroundColor = 'red'; // Red for held orders
-                screen.appendChild(imgContainer);
+                imgContainer.classList.add('hidden');
             });
 
-            updateMoreOrders(images.length + holdImages.length - 4);
+            holdImages.forEach(image => {
+                const { imgContainer } = image;
+                imgContainer.classList.add('hold-image');
+                imgContainer.querySelector('.timer-bar').style.backgroundColor = 'red'; // Red for held orders
+                holdContainer.appendChild(imgContainer);
+            });
+
+            updateMoreOrders(hiddenImages.length);
         }
 
         function updateMoreOrders(moreCount) {
             if (moreCount > 0) {
-                moreOrders.innerText = `more ${moreCount}`;
+                // Show more orders count somewhere, if needed
             } else {
-                moreOrders.innerText = '';
+                // Hide more orders indicator
             }
         }
 
@@ -325,6 +321,8 @@
                 renderImages();
             }
         }
+
+        window.onload = renderImages;
     </script>
 </body>
 </html>
