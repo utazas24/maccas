@@ -28,21 +28,25 @@
             flex-direction: column;
             height: 100%;
             width: 100%;
+            padding: 10px;
         }
         #screen {
             display: flex;
             flex-wrap: wrap;
-            padding: 10px;
             width: 100%;
             flex-grow: 1;
             overflow: hidden;
+            position: relative;
         }
         #hold-screen {
             display: flex;
             flex-wrap: wrap;
-            padding: 10px;
-            width: 100%;
-            justify-content: flex-end;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: calc(100% - 20px);
+            max-height: 30%;
+            overflow-y: auto;
             background-color: black;
         }
         .order-image-container {
@@ -50,7 +54,7 @@
             margin: 5px;
             flex-basis: calc(25% - 10px); /* Fit 4 images per row, accounting for margins */
             max-width: calc(25% - 10px);
-            height: 45%; /* Fit 2 rows, adjust for the header */
+            height: 45%;
         }
         .order-image {
             display: block;
@@ -77,6 +81,7 @@
             max-width: calc(25% - 10px);
             margin: 5px;
             height: 45%;
+            position: relative;
         }
         .hold-image .timer-bar {
             background-color: red; /* Red for held orders */
@@ -239,7 +244,7 @@
 
             holdImages.forEach(image => {
                 const { imgContainer } = image;
-                imgContainer.className = 'hold-image-container';
+                imgContainer.classList.add('hold-image-container');
                 imgContainer.querySelector('.timer-bar').style.backgroundColor = 'red'; // Red for held orders
                 holdScreen.appendChild(imgContainer);
             });
